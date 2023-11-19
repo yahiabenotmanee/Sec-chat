@@ -1,0 +1,199 @@
+package dz.bechar.messagetestwiththrd;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.telephony.SmsManager;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.os.Handler;
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Telephony;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import dz.bechar.messagetestwiththrd.R;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final int SMS_PERMISSION_REQUEST_CODE = 1;
+    private TextView messageTextView;
+    private SMSReceiver smsReceiver;
+
+    //TextView txtINCOMING;
+
+    Button btSENT;
+    CheckBox chkINFO;
+    EditText messageEditText,phoneNumberEditText;
+
+    String MSGsent="", MSGincoming="",MSGphone="";
+
+    LinearLayout MESSAGELAYOT;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // bar status
+        getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this, R.color.Orenge1));
+
+        messageEditText=findViewById(R.id.EDTmessage);
+        phoneNumberEditText=findViewById(R.id.EDTphone);
+        MESSAGELAYOT=findViewById(R.id.linearLayout);
+
+
+
+        btSENT=findViewById(R.id.BTsent);
+
+        chkINFO=findViewById(R.id.CHKinformation);
+
+
+        messageTextView = findViewById(R.id.TVincoming);
+
+        if (checkSmsPermission()) {
+            setupSmsReceiver();
+        } else {
+            requestSmsPermission();
+        }
+
+
+
+        // when you press sent button
+        btSENT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String phoneNumber = phoneNumberEditText.getText().toString();
+                String test_message = "hello ,how are you ! ";
+                String message = messageEditText.getText().toString();
+
+                if (message.isEmpty() || phoneNumber.isEmpty() ){
+
+                    btSENT.setText(" Retry ");
+                }else {
+                    btSENT.setText("SENT");
+                    sendSMS(view); }
+//                MSGsent=messageEditText.getText().toString();
+//                MSGphone=phoneNumberEditText.getText().toString();
+
+
+
+            }  });
+
+    }
+
+    // sent message
+
+    public void sendSMS(View view) {
+        String phoneNumber = phoneNumberEditText.getText().toString();
+        String test_message = "hello ,how are you ! ";
+        String message = messageEditText.getText().toString();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            // Demande d'autorisation pour envoyer des SMS
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_REQUEST_CODE);
+        } else {
+            // L'autorisation est déjà accordée, envoyez le SMS
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null);
+        }
+    }
+
+
+
+
+    private boolean checkSmsPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestSmsPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, SMS_PERMISSION_REQUEST_CODE);
+    }
+
+    private void setupSmsReceiver() {
+        smsReceiver = new SMSReceiver();
+        IntentFilter intentFilter = new IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+        registerReceiver(smsReceiver, intentFilter);
+
+        // Register a content observer to listen for changes to the SMS inbox
+        getContentResolver().registerContentObserver(Telephony.Sms.CONTENT_URI, true
+                , new SMSContentObserver(new Handler()));
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == SMS_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                setupSmsReceiver();
+            } else {
+                Toast.makeText(this, "Permission SMS refusée. Impossible de lire les messages.", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (smsReceiver != null) {
+            unregisterReceiver(smsReceiver);
+        }
+    }
+
+    private class SMSReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(intent.getAction())) {
+                displayLastReceivedMessage();
+            }
+        }
+    }
+
+    private class SMSContentObserver extends ContentObserver {
+        public SMSContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            displayLastReceivedMessage();
+        }
+    }
+
+    private void displayLastReceivedMessage() {
+        Uri uri = Uri.parse("content://sms/inbox");
+        Cursor cursor = getContentResolver().query(uri, null, null, null, "date DESC");
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String message = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+            messageTextView.setText(" " + message);
+            cursor.close();
+        } else {
+            messageTextView.setText("Aucun message trouvé dans la boîte de réception.");
+        }
+    }
+
+    //////////////////////////////////////////////
+
+}
