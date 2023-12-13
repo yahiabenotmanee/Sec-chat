@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
                     // System.out.println("Original Text: " + originalText);
                     System.out.println("Encrypted Text: " + encryptedText);
                     System.out.println("Decrypted Text: " + decryptedText);
-                    messageTextView.setText(encryptedText);
+                    messageEditText.setText(encryptedText);
+                    messageTextView.setText("");
                     sendSMS(encryptedText);
                     //   messageTextView.setText(originalText+"  is  :"+encryptedText);
                 } catch (Exception e) {
