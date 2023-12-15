@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 123;
     private static final int SMS_PERMISSION_REQUEST_CODE = 101;
 
-
     private static final String ALGORITHM = "AES";
     private static final int KEY_SIZE = 256;
    //public String message,phoneNumber,decryptedText,encryptedText,encryptedTextsent,secretKey = "YourSecretKey123";
