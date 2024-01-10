@@ -31,7 +31,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Calendar;
+import java.util.Locale;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -76,11 +79,20 @@ public class MainActivity extends AppCompatActivity {
         chkINFO=findViewById(R.id.CHKinformation);
         messageTextView = findViewById(R.id.TVincoming);
 
+
+
+        // Get the current time
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String currentTime = sdf.format(calendar.getTime());
+
+
         // when you press sent button
         btSENT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String n = messageEditText.getText().toString();
+                String n = currentTime+"\n"+ messageEditText.getText().toString();
+               // n=n+currentTime+"/  ";
                 //sendSMS(n);
                 try {
                     encryptedText = encrypt(n, secretKey);
@@ -89,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("Encrypted Text: " + encryptedText);
                     System.out.println("Decrypted Text: " + decryptedText);
                     messageEditText.setText(encryptedText);
-                    messageTextView.setText("");
+                    // messageTextView.setText("");
                     sendSMS(encryptedText);
                     //   messageTextView.setText(originalText+"  is  :"+encryptedText);
                 } catch (Exception e) {
