@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.os.Handler;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         chkINFO=findViewById(R.id.CHKinformation);
         messageTextView = findViewById(R.id.TVincoming);
 
+        ImageView imageView=findViewById(R.id.imageViewR);
 //////////////////////////////////////////////////////////////
         checkBioMetricSupported();
         Executor executor = ContextCompat.getMainExecutor(this);
@@ -111,7 +113,12 @@ public class MainActivity extends AppCompatActivity {
 
                 // Intent intent= new Intent(Fingerprint_Activity.this, MainActivity.class );
                 //startActivity(intent);
-
+                run_animation(btSENT);
+                run_animation(messageTextView);
+                run_animation(MESSAGELAYOT);
+                run_animation(phoneNumberEditText);
+                run_animation(messageEditText);
+                run_animation(imageView);
             }
             @Override
             public void onAuthenticationFailed() {
@@ -348,5 +355,9 @@ public class MainActivity extends AppCompatActivity {
         enrollIntent.putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
                 BIOMETRIC_STRONG | DEVICE_CREDENTIAL);
         startActivity(enrollIntent);
+    }
+    // animation methode
+    void run_animation(View view){
+        view.animate().alpha(1).setDuration(1600).translationY(0);
     }
 }
